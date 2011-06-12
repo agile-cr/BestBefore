@@ -1,0 +1,60 @@
+# -*- coding:utf-8; tab-width:4; mode:python -*-
+
+import unittest
+import datetime
+
+
+def is_date_ok(y, m, d):
+    try:
+        datetime.date(y, m, d)
+        return True
+    except ValueError:
+        return False
+
+
+def guess_date(args):
+    a, b, c = sorted(args)
+
+    for y,m,d in [(a,b,c), (b,a,c), (c,a,b)]:
+        if y < 2000:
+            y += 2000
+
+        if is_date_ok(y, m, d):
+            return [y, m, d]
+
+    raise ValueError
+
+
+def best_before(*args):
+    try:
+        return guess_date(list(args))
+    except ValueError:
+        return None
+
+
+class TestBestBefore(unittest.TestCase):
+    def test_dates(self):
+        dates = [
+            ([12, 31, 2999], [2999, 12, 31]),
+            ([12, 13, 2999], [2999, 12, 13]),
+            ([13, 12, 2999], [2999, 12, 13]),
+            ([11, 12, 2999], [2999, 11, 12]),
+            ([11, 1, 2999],  [2999, 1, 11]),
+            ([12, 12, 2999], [2999, 12, 12]),
+            ([13, 13, 2999], None),
+            ([32, 12, 2999], None),
+            ([2000, 11, 12], [2000, 11, 12]),
+            ([2000, 11, 2],  [2000, 2,  11]),
+            ([14,   12, 2],  [2002, 12, 14]),
+            ([99,   11, 2],  [2099, 2,  11]),
+            ([1,    2,  3],  [2001, 2,  3]),
+            ([0,    1,  2],  [2000, 1,  2]),
+            ([1,   30,  2],  [2002, 1,  30]),
+            ([100, 10,  9],  [2100, 9, 10]),
+            ]
+
+        for date_in, date_out in dates:
+            self.assertEquals(best_before(*date_in), date_out)
+
+
+unittest.main()
